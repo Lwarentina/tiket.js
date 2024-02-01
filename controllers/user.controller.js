@@ -3,7 +3,6 @@ const md5 = require(`md5`)
 const Op = require(`sequelize`).Op
 
 exports.getAllUser = async (request, response) => {
-    /** call findAll() to get all data */
     let users = await userModel.findAll()
     return response.json({
         success: true,
@@ -13,10 +12,7 @@ exports.getAllUser = async (request, response) => {
 }
 
 exports.findUser = async (request, response) => {
-    /** define keyword to find data */
     let keyword = request.params.key
-    /** call findAll() within where clause and operation
-    * to find data based on keyword */
     let users = await userModel.findAll({
         where: {
             [Op.or]: [
@@ -58,4 +54,46 @@ exports.addUser = (request, response) => {
         })
     })
 }
-   
+
+exports.updateUser = (request, response) => {
+    let dataUser = {
+        firstname: request.body.firstname,
+        lastname: request.body.lastname,
+        email: request.body.email,
+        role: request.body.role
+    }
+    if (request.body.password) {
+        dataUser.password = md5(request.body.password)
+    }
+    let userID = request.params.id
+    userModel.update(dataUser, { where: { userID : userID } })
+        .then(result => {
+            return response.json({
+                success: true,
+                message: `Data user has been updated`
+            })
+        })
+        .catch(error => {
+            return response.json({
+                success: false,
+                message: error.message
+            })
+        })
+}
+
+exports.deleteUser = (request, response) => {
+    let userID = request.params.id
+    userModel.destroy({ where: { userID: userID } })
+        .then(result => {
+            return response.json({
+                success: true,
+                message: `Data user has been deleted`
+            })
+        })
+        .catch(error => {
+            return response.json({
+                success: false,
+                message: error.message
+            })
+        })
+}
